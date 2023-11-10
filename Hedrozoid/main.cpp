@@ -56,16 +56,35 @@ int main(int argc, char** argv)
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-	float vertices[] = {
-		 0.5f,  0.5f, 0.0f,  // top right
-		 0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left 
-	};
+	// Check the maximum vertex attributes that can be declared
+	int nrAttrib;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttrib);
+	printf("Maximum number of vertex attributes supported: %d\n", nrAttrib);
 
-	unsigned int indices[] = {
-		0, 1, 3,	// First triangle
-		1, 2, 3		// Second triangle
+	//float vertices[] = {
+	//	 0.5f,  0.5f, 0.0f,  // top right
+	//	 0.5f, -0.5f, 0.0f,  // bottom right
+	//	-0.5f, -0.5f, 0.0f,  // bottom left
+	//	-0.5f,  0.5f, 0.0f   // top left 
+	//};
+
+	//unsigned int indices[] = {
+	//	0, 1, 3,	// First triangle
+	//	1, 2, 3		// Second triangle
+	//};
+
+	// First triangle vertices
+	float t1Vertices[] = {
+		-0.4f,  0.8f, 0.0f,		// Center top
+		-0.8f, -0.8f, 0.0f,		// Bottom left
+		 0.0f, -0.8f, 0.0f		// Bottom right
+	};
+		
+	// Second triangle vertices
+	float t2Vertices[] = {
+		0.0f,  0.8f, 0.0f,		// Top left
+		0.8f,  0.8f, 0.0f,		// Top right
+		0.4f, -0.8f, 0.0f		// Center bottom
 	};
 
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -78,7 +97,7 @@ int main(int argc, char** argv)
 	if (!success)
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		printf("ERROR. Shader vertex compilation failed.\n %s\n", infoLog);
+		printf("ERROR. Vertex shader compilation failed.\n %s\n", infoLog);
 		return -1;
 	}
 
@@ -90,7 +109,7 @@ int main(int argc, char** argv)
 	if (!success)
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		printf("ERROR. Shader vertex compilation failed.\n %s\n", infoLog);
+		printf("ERROR. Fragment shader compilation failed.\n %s\n", infoLog);
 		return -1;
 	}
 
@@ -110,17 +129,30 @@ int main(int argc, char** argv)
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
-	unsigned int VBO, VAO, EBO;
-	glGenBuffers(1, &VBO);
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &EBO);
+	// First triangle
+	unsigned int t1VBO, t1VAO;
+	glGenBuffers(1, &t1VBO);
+	glGenVertexArrays(1, &t1VAO);
 
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBindVertexArray(t1VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, t1VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(t1Vertices), t1Vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+	// Second triangle
+	unsigned int t2VBO, t2VAO;
+	glGenBuffers(1, &t2VBO);
+	glGenVertexArrays(1, &t2VAO);
+
+	glBindVertexArray(t2VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, t2VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(t2Vertices), t2Vertices, GL_STATIC_DRAW);
+
+	//unsigned int EBO;
+	//glGenBuffers(1, &EBO);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -133,10 +165,13 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
+		glBindVertexArray(t1VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
+
+		glUseProgram(shaderProgram);
+		glBindVertexArray(t2VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
