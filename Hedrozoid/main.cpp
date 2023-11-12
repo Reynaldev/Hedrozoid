@@ -3,28 +3,24 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "shader.h"
+
 const int SCREEN_WIDTH	= 800;
 const int SCREEN_HEIGHT = 600;
 
-const char* vertexShaderSource = "#version 330 core\n"
+const char* t2VertexShaderSource = "#version 330 core\n"
 	"layout (location = 0) in vec3 aPos;\n"
 	"void main()\n"
 	"{\n"
 	"	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 	"}\0";
 
-const char* orangeFragmentShaderSource = "#version 330 core\n"
+const char* t2FragmentShaderSource = "#version 330 core\n"
 	"out vec4 FragColor;\n"
+	"uniform vec4 vertColor;\n"
 	"void main()\n"
 	"{\n"
-	"	FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-	"}\0";
-
-const char* yellowFragmentShaderSource = "#version 330 core\n"
-	"out vec4 FragColor;\n"
-	"void main()\n"
-	"{\n"
-	"	FragColor = vec4(1.0f, 0.8f, 0.1f, 1.0f);\n"
+	"	FragColor = vertColor;\n"
 	"}\0";
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
@@ -36,6 +32,15 @@ void processInput(GLFWwindow* window)
 {
 	if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
 		glfwSetWindowShouldClose(window, true);
+}
+
+std::string getFilePath(std::string filename)
+{
+	std::string path(__FILE__);
+	size_t index = path.rfind("\\") + 1;
+	std::string filepath = path.substr(0, index) + filename;
+
+	return filepath;
 }
 
 int main(int argc, char** argv)
@@ -70,9 +75,10 @@ int main(int argc, char** argv)
 
 	// First triangle vertices
 	float t1Vertices[] = {
-		-0.4f,  0.8f, 0.0f,		// Center top
-		-0.8f, -0.8f, 0.0f,		// Bottom left
-		 0.0f, -0.8f, 0.0f		// Bottom right
+		// Positions			// Colors
+		-0.4f,  0.8f, 0.0f,		1.0f, 0.0f, 0.0f,		// Center top
+		-0.8f, -0.8f, 0.0f,		0.0f, 1.0f, 0.0f,		// Bottom left
+		 0.0f, -0.8f, 0.0f,		0.0f, 0.0f, 1.0f		// Bottom right
 	};
 		
 	// Second triangle vertices
@@ -82,68 +88,14 @@ int main(int argc, char** argv)
 		0.4f, -0.8f, 0.0f		// Center bottom
 	};
 
-	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
+	std::string t1Vertex = getFilePath("FirstTriangleVertex.glsl");
+	std::string t1Fragment = getFilePath("FirstTriangleFragment.glsl");
 
-	int success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		printf("ERROR. Vertex shader compilation failed.\n %s\n", infoLog);
-		return -1;
-	}
+	std::string t2Vertex = getFilePath("SecondTriangleVertex.glsl");
+	std::string t2Fragment = getFilePath("SecondTriangleFragment.glsl");
 
-	// Orange fragment shader
-	GLuint orangeFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(orangeFragmentShader, 1, &orangeFragmentShaderSource, NULL);
-	glCompileShader(orangeFragmentShader);
-
-	glGetShaderiv(orangeFragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(orangeFragmentShader, 512, NULL, infoLog);
-		printf("ERROR. Fragment shader compilation failed.\n %s\n", infoLog);
-		return -1;
-	}
-
-	GLuint orangeShader = glCreateProgram();
-	glAttachShader(orangeShader, vertexShader);
-	glAttachShader(orangeShader, orangeFragmentShader);
-	glLinkProgram(orangeShader);
-
-	glGetProgramiv(orangeShader, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(orangeShader, 512, NULL, infoLog);
-		printf("Error. Orange shader program linking failed.\n %s\n", infoLog);
-		return -1;
-	}
-
-	// Yellow fragment shader
-	GLuint yellowFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(yellowFragmentShader, 1, &yellowFragmentShaderSource, NULL);
-	glCompileShader(yellowFragmentShader);
-
-	GLuint yellowShader = glCreateProgram();
-	glAttachShader(yellowShader, vertexShader);
-	glAttachShader(yellowShader, yellowFragmentShader);
-	glLinkProgram(yellowShader);
-
-	glGetProgramiv(yellowShader, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(yellowShader, 512, NULL, infoLog);
-		printf("Error. Yellow shader program linking failed.\n %s\n", infoLog);
-		return -1;
-	}
-
-	// Clean up
-	glDeleteShader(orangeFragmentShader);
-	glDeleteShader(yellowFragmentShader);
-	glDeleteShader(vertexShader);
+	Shader t1Shader(t1Vertex, t1Fragment);
+	Shader t2Shader(t2Vertex, t2Fragment);
 
 	// Buffers
 	GLuint VBO[2], VAO[2];
@@ -155,8 +107,11 @@ int main(int argc, char** argv)
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(t1Vertices), t1Vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT)));
+	glEnableVertexAttribArray(1);
 
 	// Second triangle
 	glBindVertexArray(VAO[1]);
@@ -166,6 +121,9 @@ int main(int argc, char** argv)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (void*)0);
 	glEnableVertexAttribArray(0);
 
+	// Second triangle modification
+	int t2VertColorLoc = glGetUniformLocation(t2Shader.ID, "vertColor");
+
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -173,14 +131,22 @@ int main(int argc, char** argv)
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(orangeShader);
+		t1Shader.use();
 		glBindVertexArray(VAO[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-		//glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
 
-		glUseProgram(yellowShader);
+		// Yellow triangle
+		float timeValue = glfwGetTime();
+		float colorValue = (sin(timeValue) / 2.0f) + 0.5f;
+
+		t2Shader.use();
+		glUniform4f(t2VertColorLoc, colorValue, colorValue, 0.0f, 1.0f);
 		glBindVertexArray(VAO[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		// Log
+		/*printf("Time: %fs. Sin: %f. Sin/2: %f. colorValue: %f\n", 
+			timeValue, sin(timeValue), sin(timeValue) / 2, colorValue);*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

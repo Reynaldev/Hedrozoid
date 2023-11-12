@@ -27,5 +27,27 @@
     <ClCompile Include="glad.c">
       <Filter>Libraries\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FirstTriangleVertex.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="FirstTriangleFragment.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="SecondTriangleVertex.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="SecondTriangleFragment.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
