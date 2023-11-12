@@ -10,8 +10,9 @@ Shader::Shader(string vertexPath, string fragmentPath)
 	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-	printf("Vertex path: %s\n", vertexPath.c_str());
-	printf("Fragment path: %s\n", fragmentPath.c_str());
+	// Debug
+	//printf("Vertex path: %s\n", vertexPath.c_str());
+	//printf("Fragment path: %s\n", fragmentPath.c_str());
 
 	try
 	{
@@ -63,7 +64,7 @@ Shader::Shader(string vertexPath, string fragmentPath)
 
 	// Fragment shader
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment, 1, &vShaderCode, NULL);
+	glShaderSource(fragment, 1, &fShaderCode, NULL);
 	glCompileShader(fragment);
 
 	// Print compile errors if any
