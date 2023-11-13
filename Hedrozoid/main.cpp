@@ -105,13 +105,15 @@ int main(int argc, char** argv)
 	// First triangle
 	glBindVertexArray(VAO[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(t1Vertices), t1Vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(t1Vertices), t1Vertices, GL_DYNAMIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT)));
 	glEnableVertexAttribArray(1);
+
+	int t1VertColor = glGetUniformLocation(t1Shader.ID, "rotColor");
 
 	// Second triangle
 	glBindVertexArray(VAO[1]);
@@ -121,26 +123,35 @@ int main(int argc, char** argv)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// Second triangle modification
-	int t2VertColorLoc = glGetUniformLocation(t2Shader.ID, "vertColor");
+	int t2VertColor = glGetUniformLocation(t2Shader.ID, "color");
+	int t2VertPos = glGetUniformLocation(t2Shader.ID, "offset");
 
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
 
+		float timeValue = glfwGetTime();
+
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// First triangle
+		float t1Red = cos(timeValue);
+
 		t1Shader.use();
+		t1Vertices[3] = abs(t1Red);
 		glBindVertexArray(VAO[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		// Yellow triangle
-		float timeValue = glfwGetTime();
-		float colorValue = (sin(timeValue) / 2.0f) + 0.5f;
+		// Second triangle
+		float t2Red = cos(timeValue);
+		float t2Green = abs(sin(timeValue));
+		float t2Blue = t2Red * -1.0f;
+		float t2YPos = (sin(timeValue) / 3.0f);
 
 		t2Shader.use();
-		glUniform4f(t2VertColorLoc, colorValue, colorValue, 0.0f, 1.0f);
+		glUniform4f(t2VertColor, t2Red, t2Green, t2Blue, 1.0f);
+		glUniform3f(t2VertPos, 0.0f, t2YPos, 0.0f);
 		glBindVertexArray(VAO[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
