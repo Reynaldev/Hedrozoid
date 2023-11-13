@@ -137,16 +137,18 @@ int main(int argc, char** argv)
 
 		// First triangle
 		float t1Red = cos(timeValue);
+		float t1Green = abs(sin(timeValue));
+		float t1Blue = t1Red * -1.0f;
 
 		t1Shader.use();
-		t1Vertices[3] = abs(t1Red);
+		glUniform3f(t1VertColor, t1Red, t1Green, t1Blue);
 		glBindVertexArray(VAO[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		// Second triangle
-		float t2Red = cos(timeValue);
-		float t2Green = abs(sin(timeValue));
-		float t2Blue = t2Red * -1.0f;
+		float t2Red = (cos(timeValue) / 2.0f) + 0.5f;
+		float t2Green = (sin(timeValue) / 2.0f) + 0.5f;
+		float t2Blue = ((sin(timeValue)-cos(timeValue)) / 2.0f) + 0.8f;
 		float t2YPos = (sin(timeValue) / 3.0f);
 
 		t2Shader.use();
@@ -156,8 +158,11 @@ int main(int argc, char** argv)
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		// Log
-		/*printf("Time: %fs. Sin: %f. Sin/2: %f. colorValue: %f\n", 
-			timeValue, sin(timeValue), sin(timeValue) / 2, colorValue);*/
+		/*float sinVal = (sin(timeValue) / 2.0f) + 0.5f;
+		float cosVal = (cos(timeValue) / 2.0f) + 0.5f;
+		float midVal = cosVal - sinVal;
+		printf("Time: %fs. Sin: %f. Cos: %f. Mid: %f\n", 
+			timeValue, sinVal, cosVal, midVal);*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
