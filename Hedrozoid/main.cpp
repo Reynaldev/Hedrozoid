@@ -94,8 +94,11 @@ int main(int argc, char** argv)
 	std::string t2Vertex = getFilePath("SecondTriangleVertex.glsl");
 	std::string t2Fragment = getFilePath("SecondTriangleFragment.glsl");
 
-	Shader t1Shader(t1Vertex, t1Fragment);
-	Shader t2Shader(t2Vertex, t2Fragment);
+	//Shader t1Shader(t1Vertex, t1Fragment);
+	//Shader t2Shader(t2Vertex, t2Fragment);
+
+	Shader t1Shader("FirstTriangleVertex.glsl", "FirstTriangleFragment.glsl");
+	Shader t2Shader("SecondTriangleVertex.glsl", "SecondTriangleFragment.glsl");
 
 	// Buffers
 	GLuint VBO[2], VAO[2];
@@ -128,31 +131,28 @@ int main(int argc, char** argv)
 
 	while (!glfwWindowShouldClose(window))
 	{
-		processInput(window);
-
 		float timeValue = glfwGetTime();
+
+		float tRed = (cos(timeValue) / 2.0f) + 0.5f;
+		float tGreen = (sin(timeValue) / 2.0f) + 0.5f;
+		float tBlue = (sin(timeValue + 35.0f) / 2.0f) + 0.5f;
+
+		processInput(window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// First triangle
-		float t1Red = cos(timeValue);
-		float t1Green = abs(sin(timeValue));
-		float t1Blue = t1Red * -1.0f;
-
 		t1Shader.use();
-		glUniform3f(t1VertColor, t1Red, t1Green, t1Blue);
+		glUniform3f(t1VertColor, tRed, tGreen, tBlue);
 		glBindVertexArray(VAO[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		// Second triangle
-		float t2Red = (cos(timeValue) / 2.0f) + 0.5f;
-		float t2Green = (sin(timeValue) / 2.0f) + 0.5f;
-		float t2Blue = ((sin(timeValue)-cos(timeValue)) / 2.0f) + 0.8f;
 		float t2YPos = (sin(timeValue) / 3.0f);
 
 		t2Shader.use();
-		glUniform4f(t2VertColor, t2Red, t2Green, t2Blue, 1.0f);
+		glUniform4f(t2VertColor, tRed, tGreen, tBlue, 1.0f);
 		glUniform3f(t2VertPos, 0.0f, t2YPos, 0.0f);
 		glBindVertexArray(VAO[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -160,7 +160,7 @@ int main(int argc, char** argv)
 		// Log
 		/*float sinVal = (sin(timeValue) / 2.0f) + 0.5f;
 		float cosVal = (cos(timeValue) / 2.0f) + 0.5f;
-		float midVal = cosVal - sinVal;
+		float midVal = (sin(timeValue + 30.0f) / 2.0f) + 0.5f;
 		printf("Time: %fs. Sin: %f. Cos: %f. Mid: %f\n", 
 			timeValue, sinVal, cosVal, midVal);*/
 
